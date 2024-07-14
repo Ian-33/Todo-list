@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List with Authentication</title>
+    <link rel="stylesheet" href="style-folder/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            max-width: 400px;
+        }
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        li.done {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+        button {
+            margin-left: 10px;
+            background-color: #ff6347;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 7px 15px;
+            cursor: pointer;
+            font-size: 17px;
+        }
+        #login-button{
+            background-color: #61dd66;
+        }
+        #register-button{
+            background-color: #61dd66;
+        }
+        #logout-button{
+            background-color: #ff6347;
+        }
+        #add-task{
+            background-color: #61dd66;
+        }
+        #show-register-form{
+            background-color: #61dd66;
+        }
+        #show-login-form{
+            background-color: #61dd66;
+        }
+        button.edit {
+            background-color: #4CAF50;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="checkbox"] {
+            margin-left: 10px;
+        }
+        .task-controls {
+            display: flex;
+            align-items: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>To-Do List</h1>
+
+    <!-- Login Form -->
+    <div id="login-form">
+        <h2>Login</h2>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <button id="login-button">Login</button>
+        <p>Don't have an account? <button id="show-register-form">Register</button></p>
+    </div>
+
+    <!-- Registration Form -->
+    <div id="register-form" class="hidden">
+        <h2>Register</h2>
+        <input type="text" id="register-username" placeholder="Username">
+        <input type="password" id="register-password" placeholder="Password">
+        <button id="register-button">Register</button>
+        <p>Already have an account? <button id="show-login-form">Login</button></p>
+    </div>
+
+    <!-- To-Do List -->
+    <div id="todo-app" class="hidden">
+        <input type="text" id="new-task" placeholder="New task">
+        <button id="add-task">Add Task</button>
+        <ul id="todo-list"></ul>
+        <button id="logout-button">Logout</button>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyABCjjXxo6XhIcdTpUvO2C7O5uH743Fom8",
+            authDomain: "test-2be0a.firebaseapp.com",
+            projectId: "test-2be0a",
+            storageBucket: "test-2be0a.appspot.com",
+            messagingSenderId: "1026140710570",
+            appId: "1:1026140710570:web:21addb79c673d91745d2d3",
+            measurementId: "G-TMFTLPCWJG",
+            databaseURL: "https://test-2be0a-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Elements
+        const registerForm = document.getElementById('register-form');
+        const loginForm = document.getElementById('login-form');
+        const todoApp = document.getElementById('todo-app');
+        const newTaskInput = document.getElementById('new-task');
+        const todoList = document.getElementById('todo-list');
+        const addTaskButton = document.getElementById('add-task');
+        const logoutButton = document.getElementById('logout-button');
+        const showRegisterButton = document.getElementById('show-register-form');
+        const showLoginButton = document.getElementById('show-login-form');
+
+        // Register User
+        document.getElementById('register-button').addEventListener('click', () => {
+            const username = document.getElementById('register-username').value.trim();
+            const password = document.getElementById('register-password').value.trim();
+            if (username && password) {
+                const userRef = ref(database, 'users/' + username);
+                set(userRef, { password })
+                    .then(() => {
+                        alert('User registered successfully!');
+                    })
+                    .catch((error) => {
+                        alert(error.message);
+                    });
+            } else {
+                alert('Please enter a username and password.');
+            }
+        });
+
+        // Login User
+        document.getElementById('login-button').addEventListener('click', () => {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const userRef = ref(database, 'users/' + username);
+            onValue(userRef, (snapshot) => {
+                const user = snapshot.val();
+                if (user && user.password === password) {
+                    localStorage.setItem('loggedInUser', username);
+                    showTodoApp();
+                } else {
+                    alert('Invalid username or password.');
+                }
+            });
+        });
+
+        // Logout User
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('loggedInUser');
+            showLoginForm();
+        });
+
+        // Show Registration Form
+        showRegisterButton.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        });
+
+        // Show Login Form
+        showLoginButton.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+
+        // Add Task
+        addTaskButton.addEventListener('click', () => {
+            const username = localStorage.getItem('loggedInUser');
+            const newTask = newTaskInput.value.trim();
+            if (newTask !== '') {
+                const newTaskRef = push(ref(database, 'users/' + username + '/tasks'));
+                set(newTaskRef, {
+                    task: newTask,
+                    completed: false
+                });
+                newTaskInput.value = '';
+            }
+        });
+
+        // Update Task
+        function updateTask(taskId, task) {
+            const username = localStorage.getItem('loggedInUser');
+            update(ref(database, 'users/' + username + '/tasks/' + taskId), task);
+        }
+
+        // Delete Task
+        function deleteTask(taskId) {
+            const username = localStorage.getItem('loggedInUser');
+            remove(ref(database, 'users/' + username + '/tasks/' + taskId));
+        }
+
+        // Fetch Tasks
+        function fetchTasks() {
+            const username = localStorage.getItem('loggedInUser');
+            onValue(ref(database, 'users/' + username + '/tasks'), (snapshot) => {
+                const tasks = snapshot.val();
+                todoList.innerHTML = '';
+                for (let id in tasks) {
+                    const taskItem = document.createElement('li');
+                    if (tasks[id].completed) {
+                        taskItem.classList.add('done');
+                    }
+
+                    const taskText = document.createElement('span');
+                    taskText.textContent = tasks[id].task;
+                    taskItem.appendChild(taskText);
+
+                    const taskControls = document.createElement('div');
+                    taskControls.className = 'task-controls';
+
+                    const completeCheckbox = document.createElement('input');
+                    completeCheckbox.type = 'checkbox';
+                    completeCheckbox.checked = tasks[id].completed;
+                    completeCheckbox.addEventListener('change', () => updateTask(id, { completed: completeCheckbox.checked, task: tasks[id].task }));
+                    taskControls.appendChild(completeCheckbox);
+
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'Edit';
+                    editButton.className = 'edit';
+                    editButton.addEventListener('click', () => {
+                        const newTask = prompt('Edit task', tasks[id].task);
+                        if (newTask !== null) {
+                            updateTask(id, { task: newTask, completed: completeCheckbox.checked });
+                        }
+                    });
+                    taskControls.appendChild(editButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', () => deleteTask(id));
+                    taskControls.appendChild(deleteButton);
+
+                    taskItem.appendChild(taskControls);
+                    todoList.appendChild(taskItem);
+                }
+            });
+        }
+
+        // Show Todo App
+        function showTodoApp() {
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            todoApp.classList.remove('hidden');
+            fetchTasks();
+        }
+
+        // Show Login Form
+        function showLoginForm() {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            todoApp.classList.add('hidden');
+        }
+
+        // Check if user is logged in
+        const loggedInUser = localStorage.getItem('loggedInUser');
+        if (loggedInUser) {
+            showTodoApp();
+        } else {
+            showLoginForm();
+        }
+    </script>
+</body>
+</html>
+
