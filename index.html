@@ -216,8 +216,9 @@
                 if (user && user.password === password) {
                     localStorage.setItem('loggedInUser', username);
                     showTodoApp();
+                    swal("Success", "Log in successfuly", "success");
                 } else {
-                    alert('Invalid username or password.');
+                    swal("Error", "Invalid username or password.", "warning");
                 }
             });
         });
@@ -226,6 +227,7 @@
         logoutButton.addEventListener('click', () => {
             localStorage.removeItem('loggedInUser');
             showLoginForm();
+            swal("Success", "You log out successfuly", "success");
         });
 
         // Show Registration Form
