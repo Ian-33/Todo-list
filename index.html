@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List with Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   <style>
      body {
             font-family: 'Roboto', sans-serif;
@@ -195,13 +196,13 @@
                 const userRef = ref(database, 'users/' + username);
                 set(userRef, { password })
                     .then(() => {
-                        alert('User registered successfully!');
+                       swal("Success", "User registered successfuly!", "success");
                     })
                     .catch((error) => {
                         alert(error.message);
                     });
             } else {
-                alert('Please enter a username and password.');
+                swal("Error", "Please enter your username and password", "warning");
             }
         });
 
