@@ -252,6 +252,7 @@
                     completed: false
                 });
                 newTaskInput.value = '';
+                swal("Added new task", "success");
             }
         });
 
@@ -320,7 +321,6 @@
             registerForm.classList.add('hidden');
             todoApp.classList.remove('hidden');
             fetchTasks();
-         swal("Success", "Log in successfuly", "success");
         }
 
         // Show Login Form
