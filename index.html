@@ -202,7 +202,7 @@
                         alert(error.message);
                     });
             } else {
-                swal("Error", "Please enter your username and password", "warning");
+                swal("Error", "Please enter your username and password", "error");
             }
         });
 
@@ -215,6 +215,7 @@
                 const user = snapshot.val();
                 if (user && user.password === password) {
                     localStorage.setItem('loggedInUser', username);
+                    swal("Success", "You log in successfully", "success");
                     showTodoApp();
                 } else {
                     swal("Error", "Invalid username or password.", "warning");
@@ -252,7 +253,7 @@
                     completed: false
                 });
                 newTaskInput.value = '';
-                swal("Added new task", "success");
+                swal("Added new task", "You added new task", "success");
             }
         });
 
@@ -260,12 +261,21 @@
         function updateTask(taskId, task) {
             const username = localStorage.getItem('loggedInUser');
             update(ref(database, 'users/' + username + '/tasks/' + taskId), task);
+            swal({
+                  title: "Updated successfully",
+                  icon: "success",
+                 });
         }
 
         // Delete Task
         function deleteTask(taskId) {
             const username = localStorage.getItem('loggedInUser');
             remove(ref(database, 'users/' + username + '/tasks/' + taskId));
+            swal({
+                  title: "Removed successfully",
+                  icon: "success",
+                 });
+
         }
 
         // Fetch Tasks
