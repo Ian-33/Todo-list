@@ -216,7 +216,6 @@
                 if (user && user.password === password) {
                     localStorage.setItem('loggedInUser', username);
                     showTodoApp();
-                    swal("Success", "Log in successfuly", "success");
                 } else {
                     swal("Error", "Invalid username or password.", "warning");
                 }
@@ -321,6 +320,7 @@
             registerForm.classList.add('hidden');
             todoApp.classList.remove('hidden');
             fetchTasks();
+         swal("Success", "Log in successfuly", "success");
         }
 
         // Show Login Form
